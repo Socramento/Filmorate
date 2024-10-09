@@ -23,25 +23,30 @@ public class UserController {
 
 
     @GetMapping
-    public Collection<User> findAll() {
+    public Collection<@Valid User> findAll() {
         log.info("Список всех пользователей представлен");
         return users.values();
     }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        if (user.getLogin() == null || user.getLogin().contains(" ")) {
+        if (user.getLogin() == null || user.getLogin().isEmpty() || user.getLogin().isBlank()) {
+            log.warn("Не заполнен ЛОГИН!");
             throw new ValidationException("Не заполнен логин или в нем присутствую пробелы");
         }
 
-        if (user.getUserName() == null || user.getUserName().isBlank()) {
 
-             user.setUserName(user.getLogin());
+        if (user.getName() == null || user.getName().isBlank()) {
+             user.setName(user.getLogin());
             log.info("Имя заполнено.");
         }
 
-        user.setId(getNextId());
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            log.warn("Не указан EMAIL!");
+            throw new ValidationException("Не указан EMAIL!");
+        }
 
+        user.setId(getNextId());
         users.put(user.getId(), user);
         log.info("Пользователь добавлен");
         return user;
@@ -52,8 +57,7 @@ public class UserController {
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
 
-
-            oldUser.setUserName(newUser.getUserName());
+            oldUser.setName(newUser.getName());
             log.info("Имя изменено");
             oldUser.setLogin(newUser.getLogin());
             log.info("Логин изменен");
@@ -65,8 +69,7 @@ public class UserController {
             return oldUser;
         }
         log.warn("Пользователь с id -  {}  отсутствует!", newUser.getId());
-        throw new ValidationException("Пользователь с id " + newUser.getId() + " отсутствует!");
-
+        throw new ValidationException("Пользователь с ID " + newUser.getId() + " отсутствует!");
     }
 
     private long getNextId() {

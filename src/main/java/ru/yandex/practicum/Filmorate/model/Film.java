@@ -11,15 +11,15 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class Film {
-    @NotNull
+
     private Long id;
     @NotNull(message = "Название не должно быть пустым")
-    private String nameFilm;
+    private String name;
     @NotNull(message = "Описание не должно быть пустым")
     private String description;
     private LocalDate releaseDate;
     @Positive(message = "Значение должно быть положительным")
-    private Long durationFilm;
+    private Long duration;
 
 
 }
