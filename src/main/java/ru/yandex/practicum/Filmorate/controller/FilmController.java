@@ -22,14 +22,14 @@ public class FilmController {
 
 
     @GetMapping
-    public Collection<Film> findAll() {
+    public Collection<@Valid Film> findAll() {
         log.info("Список всех фильмов представлен");
         return films.values();
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        if (film.getNameFilm() == null || film.getNameFilm().isBlank()) {
+        if (film.getName() == null || film.getName().isBlank()) {
             log.warn("Пустое название фильма.");
             throw new ValidationException("Название фильма не может быть пусты!");
         }
@@ -44,14 +44,6 @@ public class FilmController {
             throw new ValidationException("Дата релиза ранее " + MOST_EARLE_DATE_RELEASE);
         }
 
-        if (film.getNameFilm() == null
-                || film.getDurationFilm() == null
-                || film.getDescription() == null
-                || film.getReleaseDate() == null) {
-            log.warn("Какое-то из полей не заполнено!");
-            throw new ValidationException("Какое-то из полей не заполнено!");
-        }
-
         film.setId(getNextId());
 
         films.put(film.getId(), film);
@@ -61,13 +53,24 @@ public class FilmController {
 
     @PutMapping
     public Film update(@Valid @RequestBody Film newFilm) {
+        if (newFilm.getId() == null ) {
+            log.warn("Не указан ID при внесении изменений через PUT-Film");
+            throw new ValidationException("Какое-то из полей не заполнено!");
+        }
+
+
         if (films.containsKey(newFilm.getId())) {
             Film oldFilm = films.get(newFilm.getId());
 
+            if (oldFilm.getId() == null ) {
+                log.warn("Не указан ID при внесении изменений через PUT-Film");
+                throw new ValidationException("Какое-то из полей не заполнено!");
+            }
 
-            oldFilm.setNameFilm(newFilm.getNameFilm());
+
+            oldFilm.setName(newFilm.getName());
             log.info("Называние изменено");
-            oldFilm.setDurationFilm(newFilm.getDurationFilm());
+            oldFilm.setDuration(newFilm.getDuration());
             log.info("Продолжительность изменена");
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
             log.info("Дата релиза изменена");
@@ -76,8 +79,8 @@ public class FilmController {
 
             return oldFilm;
         }
-        log.warn("Фильм с id - {}  отсутствует!", newFilm.getId());
-        throw new ValidationException("Фильм с " + newFilm.getId() + "отсутствует!");
+        log.error("Фильм с id - {}  отсутствует!", newFilm.getId());
+        throw new ValidationException("Фильм с ID " + newFilm.getId() + " отсутствует!");
 
     }
 
